@@ -46,6 +46,7 @@ public class ReplaceIDsPatch: AbstractPatch
                 {
                     profileListNeedingResaved.Add(profile);
                     data[newItem.Id] = cloner.Clone(customizedObject);
+                    data[newItem.Id].TimesLost += 1;
                     dirty = true;
 
                     logger.Info($"StatTrack: weapon {originalItem.Id} is now {newItem.Id}, stats copied");
