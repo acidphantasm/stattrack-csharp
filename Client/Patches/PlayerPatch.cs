@@ -23,7 +23,13 @@ internal class PlayerPatch : ModulePatch
         var weapon = damageInfo.Weapon.Id;
         var weaponTpl = damageInfo.Weapon.TemplateId;
 
-        var isBoss = __instance.IsAI && __instance.AIData.IAmBoss;
+        var isBoss = false;
+        if (WildSpawnTypeExtension._spawnTypeSettings.TryGetValue(__instance.Profile.Info.Settings.Role, out var wildSpawnTypeSettings))
+        {
+            isBoss = __instance.IsAI && __instance.AIData.IAmBoss && wildSpawnTypeSettings.ScavRoleKey == "ScavRole/Boss";
+        }
+        
+        Plugin.LogSource.LogInfo($"IsBoss = {isBoss}");
 
         if (bodyPart == EBodyPart.Head)
         {

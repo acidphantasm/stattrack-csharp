@@ -4,7 +4,7 @@ using BepInEx.Logging;
 
 namespace StattrackClient
 {
-    [BepInPlugin("com.acidphantasm.stattrack", "acidphantasm-StatTrack", "2.1.0")]
+    [BepInPlugin("com.acidphantasm.stattrack", "acidphantasm-StatTrack", "2.1.1")]
     public class Plugin : BaseUnityPlugin
     {
         public static ManualLogSource LogSource;
