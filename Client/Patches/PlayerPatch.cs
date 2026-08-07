@@ -28,8 +28,6 @@ internal class PlayerPatch : ModulePatch
         {
             isBoss = __instance.IsAI && __instance.AIData.IAmBoss && wildSpawnTypeSettings.ScavRoleKey == "ScavRole/Boss";
         }
-        
-        Plugin.LogSource.LogInfo($"IsBoss = {isBoss}");
 
         if (bodyPart == EBodyPart.Head)
         {
