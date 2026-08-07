@@ -1,29 +1,25 @@
-﻿using acidphantasm_stattrack.Utils;
+﻿namespace StattrackClient.Patches;
+
+using Utils;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using ChatShared;
+using EFT;
 
-namespace acidphantasm_stattrack.Patches
+public class InsurancePatch : ModulePatch
 {
-    public class InsurancePatch : ModulePatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(SocialNetworkClass), nameof(SocialNetworkClass.method_7));
-        }
+        return AccessTools.Method(typeof(SocialNetwork), "DisplayMessage", [typeof(DialogueChatMessage), typeof(string)]);
+    }
 
-        [PatchPostfix]
-        public static void Postfix(ChatMessageClass message)
+    [PatchPostfix]
+    public static void Postfix(DialogueChatMessage message)
+    {
+        if (message.HasRewards && message.Type == EMessageType.InsuranceReturn)
         {
-            if (message.HasRewards && message.Type == ChatShared.EMessageType.InsuranceReturn)
-            {
-                JsonFileUtils.LoadFromServer();
-            }
+            JsonFileUtils.LoadFromServer();
         }
     }
 }

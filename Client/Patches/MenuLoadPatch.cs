@@ -1,33 +1,24 @@
-﻿using acidphantasm_stattrack.Utils;
+﻿namespace StattrackClient.Patches;
+
+using System.Reflection;
+using System.Threading.Tasks;
 using Comfort.Common;
+using EFT;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using Utils;
 
-namespace acidphantasm_stattrack.Patches
+public class MenuLoadPatch : ModulePatch
 {
-    public class MenuLoadPatch : ModulePatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            Type type = PatchConstants.EftTypes.Single(
-                t => !t.IsAbstract &&
-                typeof(ProfileEndpointFactoryAbstractClass).IsAssignableFrom(t) &&
-                t.GetMethod("RequestBuilds") != null);
-            return AccessTools.Method(type, "RequestBuilds");
-        }
+        return AccessTools.Method(typeof(EftClientBackendSession), nameof(EftClientBackendSession.RequestBuilds));
+    }
 
-        [PatchPostfix]
-        public static async void Postfix(Task<IResult> __result)
-        {
-            await __result;
-            JsonFileUtils.LoadFromServer();
-        }
+    [PatchPostfix]
+    public static async void Postfix(Task<IResult> __result)
+    {
+        await __result;
+        await JsonFileUtils.LoadFromServer();
     }
 }

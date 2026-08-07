@@ -1,10 +1,10 @@
-﻿using acidphantasm_stattrack.Patches;
+﻿using StattrackClient.Patches;
 using BepInEx;
 using BepInEx.Logging;
 
-namespace acidphantasm_stattrack
+namespace StattrackClient
 {
-    [BepInPlugin("com.acidphantasm.stattrack", "acidphantasm-StatTrack", "2.0.0")]
+    [BepInPlugin("com.acidphantasm.stattrack", "acidphantasm-StatTrack", "2.1.0")]
     public class Plugin : BaseUnityPlugin
     {
         public static ManualLogSource LogSource;
@@ -13,16 +13,13 @@ namespace acidphantasm_stattrack
         {
             LogSource = Logger;
 
-            LogSource.LogInfo("[StatTrack] loading...");
-
             new WeaponPatch().Enable();
             new WeaponOnShotPatch().Enable();
             new PlayerPatch().Enable();
+            new PlayerPatch2().Enable();
             new GameWorldPatch().Enable();
             new MenuLoadPatch().Enable();
             new InsurancePatch().Enable();
-
-            LogSource.LogInfo("[StatTrack] loaded!");
         }
     }
 }

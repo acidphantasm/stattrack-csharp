@@ -1,10 +1,10 @@
-﻿using acidphantasm_stattrack.Utils;
+﻿using StattrackClient.Utils;
 using EFT;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
-namespace acidphantasm_stattrack.Patches
+namespace StattrackClient.Patches
 {
     internal class GameWorldPatch : ModulePatch
     {
@@ -16,7 +16,8 @@ namespace acidphantasm_stattrack.Patches
         [PatchPostfix]
         private static void PatchPostfix(IPlayer iPlayer)
         {
-            if (iPlayer.IsYourPlayer) JsonFileUtils.EndRaidMergeData();
+            if (iPlayer.IsYourPlayer) 
+                JsonFileUtils.EndRaidMergeData();
         }
     }
 }

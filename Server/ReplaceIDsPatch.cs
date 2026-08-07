@@ -1,21 +1,28 @@
-﻿using System.Reflection;
+﻿namespace StattrackServer;
+
+using System.Reflection;
 using HarmonyLib;
+using SPTarkov.Common.Models.Logging;
+using SPTarkov.DI.Annotations;
 using SPTarkov.Reflection.Patching;
-using SPTarkov.Server.Core.DI;
 using SPTarkov.Server.Core.Extensions;
-using SPTarkov.Server.Core.Helpers;
-using SPTarkov.Server.Core.Models.Common;
-using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
-using SPTarkov.Server.Core.Models.Utils;
-using SPTarkov.Server.Core.Services;
-using SPTarkov.Server.Core.Utils;
 using SPTarkov.Server.Core.Utils.Cloners;
 
-namespace _acidphantasm_stattrack;
-
+[Injectable]
 public class ReplaceIDsPatch: AbstractPatch
 {
+    private static ICloner _cloner = default!;
+    private static ISptLogger<ReplaceIDsPatch> _logger = default!;
+    private static TrackingData _trackingData = default!;
+    
+    public ReplaceIDsPatch(ICloner cloner, ISptLogger<ReplaceIDsPatch> logger, TrackingData trackingData)
+    {
+        _cloner = cloner;
+        _logger = logger;
+        _trackingData = trackingData;
+    }
+    
     protected override MethodBase GetTargetMethod()
     {
         return AccessTools.Method(typeof(ItemExtensions), nameof(ItemExtensions.ReplaceIDs));
@@ -24,32 +31,27 @@ public class ReplaceIDsPatch: AbstractPatch
     [PatchPrefix]
     public static void Prefix(IEnumerable<Item> items, out IEnumerable<Item> __state)
     {
-        var cloner = ServiceLocator.ServiceProvider.GetService<ICloner>();
-        
-        __state = cloner.Clone(items);
+        __state = _cloner.Clone(items);
     }
     
     [PatchPostfix]
     public static void PostFix(IEnumerable<Item> items, IEnumerable<Item> __state)
     {
-        var cloner = ServiceLocator.ServiceProvider.GetService<ICloner>();
-        var logger = ServiceLocator.ServiceProvider.GetService<ISptLogger<StatTrack>>();
-        
         var dirty = false;
         var profileListNeedingResaved = new List<string>();
         
         foreach (var (originalItem, newItem) in __state.Zip(items))
         {
-            foreach (var (profile, data) in SaveLoadRouter.WeaponStats)
+            foreach (var (profile, data) in _trackingData.WeaponStats)
             {
-                if (data.TryGetValue(originalItem.Id, out CustomizedObject customizedObject))
+                if (data.TryGetValue(originalItem.Id, out var customizedObject))
                 {
                     profileListNeedingResaved.Add(profile);
-                    data[newItem.Id] = cloner.Clone(customizedObject);
+                    data[newItem.Id] = _cloner.Clone(customizedObject);
                     data[newItem.Id].TimesLost += 1;
                     dirty = true;
 
-                    logger.Info($"StatTrack: weapon {originalItem.Id} is now {newItem.Id}, stats copied");
+                    _logger.Info($"StatTrack: weapon {originalItem.Id} is now {newItem.Id}, stats copied");
                 }
             }
         }
@@ -58,8 +60,8 @@ public class ReplaceIDsPatch: AbstractPatch
         {
             foreach (var profile in profileListNeedingResaved)
             {
-                logger.Info($"Saving Profile: {profile}");
-                var task = SaveLoadRouter.Save(profile);
+                _logger.Info($"Saving Profile: {profile}");
+                var task = _trackingData.Save(profile);
             }
         }
     }
